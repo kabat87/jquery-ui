@@ -33,7 +33,6 @@ QUnit.test( "Radios - Initial class structure", function( assert ) {
 } );
 
 QUnit.test( "Ensure checked after single click on checkbox label button", function( assert ) {
-	var ready = assert.async();
 	assert.expect( 2 );
 
 	$( "#check2" ).checkboxradio().on( "change", function() {
@@ -43,14 +42,7 @@ QUnit.test( "Ensure checked after single click on checkbox label button", functi
 		assert.hasClasses( label, "ui-state-active" );
 	} );
 
-	// Support: Opera
-	// Opera doesn't trigger a change event when this is done synchronously.
-	// This seems to be a side effect of another test, but until that can be
-	// tracked down, this delay will have to do.
-	setTimeout( function() {
-		$( "#check2" ).checkboxradio( "widget" ).simulate( "click" );
-		ready();
-	} );
+	$( "#check2" ).checkboxradio( "widget" ).simulate( "click" );
 } );
 
 QUnit.test( "Handle form association via form attribute", function( assert ) {
@@ -129,6 +121,43 @@ QUnit.test( "Calling checkboxradio on an input with no label throws an error", f
 		error,
 		"Proper error thrown"
 	);
+} );
+
+QUnit.test( "Inheriting label from initial HTML", function( assert ) {
+	var tests = [
+		{
+			id: "label-with-no-for-with-html",
+			expectedLabel: "<strong>Hi</strong>, <em>I'm a label</em>"
+		},
+		{
+			id: "label-with-no-for-with-text",
+			expectedLabel: "Hi, I'm a label"
+		},
+		{
+			id: "label-with-no-for-with-html-like-text",
+			expectedLabel: "&lt;em&gt;Hi, I'm a label&lt;/em&gt;"
+		}
+	];
+
+	assert.expect( tests.length );
+
+	tests.forEach( function( testData ) {
+		var id = testData.id;
+		var expectedLabel = testData.expectedLabel;
+		var inputElem = $( "#" + id );
+		var labelElem = inputElem.parent();
+
+		inputElem.checkboxradio( { icon: false } );
+
+		var labelWithoutInput = labelElem.clone();
+		labelWithoutInput.find( "input" ).remove();
+
+		assert.strictEqual(
+			labelWithoutInput.html().trim(),
+			expectedLabel.trim(),
+			"Label correct [" + id + "]"
+		);
+	} );
 } );
 
 } );

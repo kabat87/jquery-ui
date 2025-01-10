@@ -1,7 +1,7 @@
 ( function() {
 "use strict";
 
-var DEFAULT_JQUERY_VERSION = "1.12.4";
+var DEFAULT_JQUERY_VERSION = "3.7.1";
 
 requirejs.config( {
 	paths: {
@@ -11,32 +11,24 @@ requirejs.config( {
 		"jquery-migrate": migrateUrl(),
 		"jquery-simulate": "../../../external/jquery-simulate/jquery.simulate",
 		"lib": "../../lib",
-		"phantom-bridge": "../../../node_modules/grunt-contrib-qunit/phantomjs/bridge",
-		"qunit-assert-classes": "../../../external/qunit-assert-classes/qunit-assert-classes",
-		"qunit-assert-close": "../../../external/qunit-assert-close/qunit-assert-close",
+		"qunit-assert-classes": "../../lib/vendor/qunit-assert-classes/qunit-assert-classes",
+		"qunit-assert-close": "../../lib/vendor/qunit-assert-close/qunit-assert-close",
 		"qunit": "../../../external/qunit/qunit",
-		"testswarm": "http://swarm.jquery.org/js/inject.js?" + ( new Date() ).getTime(),
 		"ui": "../../../ui"
 	},
 	shim: {
 		"globalize/ja-JP": [ "globalize" ],
 		"jquery-simulate": [ "jquery" ],
-		"qunit-assert-close": [ "qunit" ],
-		"testswarm": [ "qunit" ]
+		"qunit-assert-close": [ "qunit" ]
 	}
 } );
 
-// Create a module that disables back compat for UI modules
-define( "jquery-no-back-compat", [ "jquery" ], function( $ ) {
-	$.uiBackCompat = false;
+// Create a module that enables back compat for UI modules
+define( "jquery-back-compat", [ "jquery" ], function( $ ) {
+	$.uiBackCompat = true;
 
 	return $;
 } );
-
-// Create a dummy bridge if we're not actually testing in PhantomJS
-if ( !/PhantomJS/.test( navigator.userAgent ) ) {
-	define( "phantom-bridge", function() {} );
-}
 
 // Load all modules in series
 function requireModules( dependencies, callback, modules ) {
@@ -59,10 +51,12 @@ function requireModules( dependencies, callback, modules ) {
 }
 
 // Load a set of test file along with the required test infrastructure
-function requireTests( dependencies, noBackCompat ) {
-	var preDependencies = [
+function requireTests( dependencies, options ) {
+
+	var backCompat = !!( options && options.backCompat ),
+		preDependencies = [
 		"lib/qunit",
-		noBackCompat ? "jquery-no-back-compat" : "jquery",
+		backCompat ? "jquery-back-compat" : "jquery",
 		"jquery-simulate"
 	];
 
@@ -72,11 +66,6 @@ function requireTests( dependencies, noBackCompat ) {
 	}
 
 	dependencies = preDependencies.concat( dependencies );
-
-	// Load the TestSwarm injector, if necessary
-	if ( parseUrl().swarmURL ) {
-		dependencies.push( "testswarm" );
-	}
 
 	requireModules( dependencies, function( QUnit ) {
 		QUnit.start();
@@ -108,7 +97,7 @@ function jqueryUrl() {
 	var url;
 
 	if ( version === "git" || version === "3.x-git" ) {
-		url = "https://code.jquery.com/jquery-" + version;
+		url = "https://releases.jquery.com/git/jquery-" + version;
 	} else {
 		url = "../../../external/jquery-" + version + "/jquery";
 	}
@@ -121,11 +110,11 @@ function migrateUrl() {
 	var url;
 
 	if ( jqueryVersion === "git" ) {
-		url = "https://code.jquery.com/jquery-migrate-git";
+		url = "https://releases.jquery.com/git/jquery-migrate-git";
 	} else if ( jqueryVersion[ 0 ] === "3" ) {
-		url = "../../../external/jquery-migrate-3.3.2/jquery-migrate";
+		url = "../../../external/jquery-migrate-3.x/jquery-migrate";
 	} else if ( jqueryVersion[ 0 ] === "1" || jqueryVersion[ 0 ] === "2" ) {
-		url = "../../../external/jquery-migrate-1.4.1/jquery-migrate";
+		url = "../../../external/jquery-migrate-1.x/jquery-migrate";
 	} else if ( jqueryVersion === "custom" ) {
 		if ( parseUrl().migrate ) {
 			throw new Error( "Migrate not currently supported for custom build" );
@@ -142,7 +131,7 @@ function migrateUrl() {
 // - data-widget: A widget to load test modules for
 //   - Automatically loads common, core, events, methods, and options
 // - data-deprecated: Loads the deprecated test modules for a widget
-// - data-no-back-compat: Set $.uiBackCompat to false
+// - data-back-compat: Set $.uiBackCompat to `true`
 ( function() {
 
 	// Find the script element
@@ -160,7 +149,7 @@ function migrateUrl() {
 	}
 	var widget = script.getAttribute( "data-widget" );
 	var deprecated = !!script.getAttribute( "data-deprecated" );
-	var noBackCompat = !!script.getAttribute( "data-no-back-compat" );
+	var backCompat = !!script.getAttribute( "data-back-compat" );
 
 	if ( widget ) {
 		modules = modules.concat( [
@@ -175,15 +164,7 @@ function migrateUrl() {
 		}
 	}
 
-	var jQueryVersion = parseUrl().jquery;
-
-	// Load the jQuery fixes, if necessary
-	if ( !jQueryVersion ||
-		( jQueryVersion.indexOf( "git" ) === -1 && parseFloat( jQueryVersion ) < 4 ) ) {
-		modules.unshift( "ui/jquery-patch" );
-	}
-
-	requireTests( modules, noBackCompat );
+	requireTests( modules, { backCompat: backCompat } );
 } )();
 
 } )();

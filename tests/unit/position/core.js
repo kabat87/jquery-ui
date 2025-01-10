@@ -105,7 +105,7 @@ QUnit.test( "positions", function( assert ) {
 				assert.deepEqual( el.offset(), {
 					top: start.top + offsets[ vertical ] * ( my ? -1 : 1 ),
 					left: start.left + offsets[ horizontal ] * ( my ? -1 : 1 )
-				}, "Position via " + QUnit.jsDump.parse( { my: _my, at: _at } ) );
+				}, "Position via " + QUnit.dump.parse( { my: _my, at: _at } ) );
 			} );
 		} );
 	} );
@@ -396,8 +396,6 @@ QUnit.test( "collision: fit, no collision", function( assert ) {
 	}, "with offset" );
 } );
 
-// Currently failing in IE8 due to the iframe used by TestSwarm
-if ( !/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() ) ) {
 QUnit.test( "collision: fit, collision", function( assert ) {
 	assert.expect( 2 + ( scrollTopSupport() ? 1 : 0 ) );
 
@@ -428,7 +426,6 @@ QUnit.test( "collision: fit, collision", function( assert ) {
 		win.scrollTop( 0 ).scrollLeft( 0 );
 	}
 } );
-}
 
 QUnit.test( "collision: flip, no collision", function( assert ) {
 	assert.expect( 2 );

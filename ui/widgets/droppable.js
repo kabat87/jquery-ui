@@ -1,17 +1,17 @@
 /*!
  * jQuery UI Droppable @VERSION
- * http://jqueryui.com
+ * https://jqueryui.com
  *
- * Copyright jQuery Foundation and other contributors
+ * Copyright OpenJS Foundation and other contributors
  * Released under the MIT license.
- * http://jquery.org/license
+ * https://jquery.org/license
  */
 
 //>>label: Droppable
 //>>group: Interactions
 //>>description: Enables drop targets for draggable elements.
-//>>docs: http://api.jqueryui.com/droppable/
-//>>demos: http://jqueryui.com/droppable/
+//>>docs: https://api.jqueryui.com/droppable/
+//>>demos: https://jqueryui.com/droppable/
 
 ( function( factory ) {
 	"use strict";
@@ -241,7 +241,7 @@ $.widget( "ui.droppable", {
 	},
 
 	// Extension points just to make backcompat sane and avoid duplicating logic
-	// TODO: Remove in 1.13 along with call to it below
+	// TODO: Remove in 1.14 along with call to it below
 	_addHoverClass: function() {
 		this._addClass( "ui-droppable-hover" );
 	},
@@ -463,7 +463,7 @@ $.ui.ddmanager = {
 
 // DEPRECATED
 // TODO: switch return back to widget declaration at top of file when this is removed
-if ( $.uiBackCompat !== false ) {
+if ( $.uiBackCompat === true ) {
 
 	// Backcompat for activeClass and hoverClass options
 	$.widget( "ui.droppable", $.ui.droppable, {

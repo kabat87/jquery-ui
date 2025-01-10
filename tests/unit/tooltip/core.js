@@ -26,6 +26,8 @@ QUnit.test( "markup structure", function( assert ) {
 	assert.equal( tooltip.length, 1, ".ui-tooltip exists" );
 	assert.equal( tooltip.find( ".ui-tooltip-content" ).length, 1,
 		".ui-tooltip-content exists" );
+
+	element.tooltip( "destroy" );
 } );
 
 QUnit.test( "accessibility", function( assert ) {
@@ -95,6 +97,8 @@ QUnit.test( "nested tooltips", function( assert ) {
 
 	child.trigger( "mouseover" );
 	assert.equal( $( ".ui-tooltip" ).text(), "child" );
+
+	parent.tooltip( "destroy" );
 } );
 
 // #8742
@@ -131,7 +135,7 @@ QUnit.test( "tooltip on .ui-state-disabled element", function( assert ) {
 	assert.equal( $( ".ui-tooltip" ).length, 0 );
 } );
 
-// http://bugs.jqueryui.com/ticket/8740
+// https://bugs.jqueryui.com/ticket/8740
 QUnit.test( "programmatic focus with async content", function( assert ) {
 	var ready = assert.async();
 	assert.expect( 2 );
@@ -148,6 +152,7 @@ QUnit.test( "programmatic focus with async content", function( assert ) {
 
 		element.on( "tooltipclose", function( event ) {
 			assert.deepEqual( event.originalEvent.type, "focusout" );
+			element.tooltip( "destroy" );
 			ready();
 		} );
 
@@ -180,7 +185,7 @@ QUnit.test( "destroy during hide animation; only one close event", function( ass
 	} );
 } );
 
-// http://bugs.jqueryui.com/ticket/10602
+// https://bugs.jqueryui.com/ticket/10602
 QUnit.test( "multiple active delegated tooltips", function( assert ) {
 	var ready = assert.async();
 	assert.expect( 1 );
@@ -229,7 +234,7 @@ QUnit.test( "multiple active delegated tooltips", function( assert ) {
 	step1();
 } );
 
-// http://bugs.jqueryui.com/ticket/11272
+// https://bugs.jqueryui.com/ticket/11272
 QUnit.test( "remove conflicting attributes from live region", function( assert ) {
 	assert.expect( 2 );
 
@@ -249,9 +254,80 @@ QUnit.test( "remove conflicting attributes from live region", function( assert )
 					"no name attributes within live region" );
 				assert.equal( $( ".ui-helper-hidden-accessible [id]" ).length, 0,
 					"no id attributes within live region" );
+				$( "#tooltipped1" ).tooltip( "destroy" );
 			}
 		} )
 		.tooltip( "open" );
+} );
+
+// gh-1990
+QUnit.test( "don't crash on empty tooltip content", function( assert ) {
+	var ready = assert.async();
+	assert.expect( 1 );
+
+	var anchor = $( "#tooltipped1" ),
+		input = anchor.next(),
+		actions = [];
+
+	$( document ).tooltip( {
+			show: false,
+			hide: false,
+			content: function() {
+				var title = $( this ).attr( "title" );
+				if ( title === "inputtitle" ) {
+					return "";
+				}
+				return title;
+			},
+			open: function( event, ui ) {
+				actions.push( "open:" + ui.tooltip.text() );
+			},
+			close: function( event, ui ) {
+				actions.push( "close:" + ui.tooltip.text() );
+			}
+		} );
+
+	function step1() {
+		anchor.simulate( "mouseover" );
+		setTimeout( step2 );
+	}
+
+	function step2() {
+		anchor.simulate( "mouseout" );
+		setTimeout( step3 );
+	}
+
+	function step3() {
+		input.simulate( "focus" );
+		setTimeout( step4 );
+	}
+
+	function step4() {
+		input.simulate( "blur" );
+		setTimeout( step5 );
+	}
+
+	function step5() {
+		anchor.simulate( "mouseover" );
+		setTimeout( step6 );
+	}
+
+	function step6() {
+		anchor.simulate( "mouseout" );
+		setTimeout( step7 );
+	}
+
+	function step7() {
+		assert.deepEqual( actions, [
+			"open:anchortitle",
+			"close:anchortitle",
+			"open:anchortitle",
+			"close:anchortitle"
+		], "Tooltip opens and closes without crashing" );
+		ready();
+	}
+
+	step1();
 } );
 
 } );

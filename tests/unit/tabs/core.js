@@ -29,9 +29,9 @@ QUnit.test( "markup structure", function( assert ) {
 	assert.hasClasses( tabs[ 2 ], "ui-tabs-tab" );
 
 	// DEPRECATED
-	assert.hasClasses( tabs[ 0 ], "ui-tab" );
-	assert.hasClasses( tabs[ 1 ], "ui-tab" );
-	assert.hasClasses( tabs[ 2 ], "ui-tab" );
+	assert.lacksClasses( tabs[ 0 ], "ui-tab" );
+	assert.lacksClasses( tabs[ 1 ], "ui-tab" );
+	assert.lacksClasses( tabs[ 2 ], "ui-tab" );
 
 	assert.equal( tabs.length, 3, "There are exactly three tabs" );
 	assert.hasClasses( anchors[ 0 ], "ui-tabs-anchor" );
@@ -82,6 +82,37 @@ QUnit.test( "non-tab list items", function( assert ) {
 	assert.equal( element.tabs( "option", "active" ), 0, "defaults to first tab" );
 	assert.equal( element.find( ".ui-tabs-nav li.ui-state-active" ).index(), 1,
 		"first actual tab is active" );
+} );
+
+QUnit.test( "ID escaping backslashes", function( assert ) {
+	assert.expect( 5 );
+
+	location.hash = "#fragment\b-2";
+
+	var element = $( "#tabs1" )
+		.find( "a[href='#fragment-2']" )
+			.attr( "href", "#fragment\b-2" )
+		.end()
+		.find( "#fragment-2" )
+			.attr( "id", "fragment\b-2" )
+		.end()
+		.tabs();
+	var tabs = element.find( ".ui-tabs-nav li" );
+	var anchors = tabs.find( ".ui-tabs-anchor" );
+	var panels = element.find( ".ui-tabs-panel" );
+
+	assert.strictEqual( element.tabs( "option", "active" ), 1,
+		"should set the active option" );
+
+	assert.strictEqual( anchors.length, 3, "should decorate all anchors" );
+	assert.strictEqual( panels.length, 3, "should decorate all panels" );
+
+	assert.strictEqual( panels.eq( 1 ).attr( "aria-labelledby" ), anchors.eq( 1 ).attr( "id" ),
+		"panel 2 aria-labelledby equals anchor 2 id" );
+	assert.strictEqual( tabs.eq( 1 ).attr( "aria-controls" ), "fragment\b-2",
+		"tab 2 aria-controls" );
+
+	location.hash = "";
 } );
 
 QUnit.test( "aria-controls", function( assert ) {
@@ -188,13 +219,7 @@ QUnit.test( "keyboard support - LEFT, RIGHT, UP, DOWN, HOME, END, SPACE, ENTER",
 		} ),
 		tabs = element.find( ".ui-tabs-nav li" ),
 		panels = element.find( ".ui-tabs-panel" ),
-		keyCode = $.ui.keyCode,
-
-		// Support: IE 11 with jQuery 1.8.
-		// In IE with jQuery 1.8 focusout may not happen immediately so some checks
-		// need to be done later.
-		isFocusoutImmediate = !( document.documentMode &&
-			jQuery.fn.jquery.indexOf( "1.8." ) === 0 );
+		keyCode = $.ui.keyCode;
 
 	element.tabs( "instance" ).delay = 1;
 
@@ -209,9 +234,7 @@ QUnit.test( "keyboard support - LEFT, RIGHT, UP, DOWN, HOME, END, SPACE, ENTER",
 
 		tabs.eq( 0 ).simulate( "keydown", { keyCode: keyCode.DOWN } );
 		assert.hasClasses( tabs.eq( 1 ), "ui-state-focus", "DOWN moves focus to next tab" );
-		if ( isFocusoutImmediate ) {
-			assert.lacksClasses( tabs.eq( 0 ), "ui-state-focus", "first tab is no longer focused" );
-		}
+		assert.lacksClasses( tabs.eq( 0 ), "ui-state-focus", "first tab is no longer focused" );
 		assert.equal( tabs.eq( 1 ).attr( "aria-selected" ), "true", "second tab has aria-selected=true" );
 		assert.equal( tabs.eq( 0 ).attr( "aria-selected" ), "false", "first tab has aria-selected=false" );
 		assert.ok( panels.eq( 1 ).is( ":hidden" ), "second panel is still hidden" );
@@ -256,9 +279,6 @@ QUnit.test( "keyboard support - LEFT, RIGHT, UP, DOWN, HOME, END, SPACE, ENTER",
 
 	// Left, home, space
 	function step2() {
-		if ( !isFocusoutImmediate ) {
-			assert.lacksClasses( tabs.eq( 0 ), "ui-state-focus", "first tab is no longer focused" );
-		}
 		assert.equal( tabs.eq( 2 ).attr( "aria-selected" ), "true", "third tab has aria-selected=true" );
 		assert.equal( tabs.eq( 0 ).attr( "aria-selected" ), "false", "first tab has aria-selected=false" );
 		assert.ok( panels.eq( 2 ).is( ":visible" ), "third panel is visible" );
@@ -673,6 +693,58 @@ QUnit.test( "#4033 - IE expands hash to full url and misinterprets tab as ajax",
 
 	assert.equal( element.find( ".ui-tabs-nav li" ).attr( "aria-controls" ), "tab", "aria-contorls attribute is correct" );
 	state( assert, element, 1 );
+} );
+
+
+QUnit.test( "extra listeners created when tabs are added/removed (trac-15136)", function( assert ) {
+	assert.expect( 3 );
+
+	var origRemoveListenersCount;
+	var element = $( "#tabs1" ).tabs();
+	var tabCounter = 10;
+
+	function addTab() {
+		var label = "Tab " + tabCounter;
+		var id = "tabs-" + tabCounter;
+		var li = $(
+			"<li>" +
+			"	<a href='#" + id + "'>" + label + "</a> " +
+			"	<span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span>" +
+			"</li>"
+		);
+		var tabContentHtml = "Tab " + tabCounter + " content.";
+
+		element.find( ".ui-tabs-nav" ).append( li );
+		element.append( "<div id='" + id + "'><p>" + tabContentHtml + "</p></div>" );
+		element.tabs( "refresh" );
+		tabCounter++;
+	}
+
+	function removeLastTab() {
+		element.find( ".ui-icon-close" ).last().trigger( "click" );
+	}
+
+	origRemoveListenersCount = jQuery._data( element[ 0 ], "events" ).remove.length;
+
+	addTab();
+	assert.equal( jQuery._data( element[ 0 ], "events" ).remove.length,
+		origRemoveListenersCount,
+		"No extra listeners after adding a new tab" );
+
+	addTab();
+	addTab();
+	addTab();
+	assert.equal( jQuery._data( element[ 0 ], "events" ).remove.length,
+		origRemoveListenersCount,
+		"No extra listeners after adding multiple tabs" );
+
+	removeLastTab();
+	removeLastTab();
+	removeLastTab();
+	removeLastTab();
+	assert.equal( jQuery._data( element[ 0 ], "events" ).remove.length,
+		origRemoveListenersCount,
+		"No extra listeners after removing all the extra tabs" );
 } );
 
 } );

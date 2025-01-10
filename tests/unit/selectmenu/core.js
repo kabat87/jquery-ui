@@ -394,14 +394,103 @@ QUnit.test( "Options with hidden attribute should not be rendered", function( as
 	setTimeout( function() {
 		button.trigger( "click" );
 		options = menu.children()
-			.map( function() {
-				return $( this ).text();
+			.get()
+			.filter( function( item ) {
+				return $( item ).is( ":visible" );
 			} )
-			.get();
+			.map( function( item ) {
+				return $( item ).text();
+			} );
 		assert.deepEqual( options, [ "Slower", "Medium", "Fast", "Faster" ], "correct elements" );
 
 		ready();
 	} );
+} );
+
+QUnit.test( "Options with hidden attribute should not break the widget (gh-2082)",
+		function( assert ) {
+	var ready = assert.async();
+	assert.expect( 1 );
+
+	var button;
+	var element = $( "#speed" );
+
+	element.find( "option" ).slice( 0, 2 ).prop( "hidden", true );
+	element.val( "Faster" );
+	element.selectmenu();
+
+	button = element.selectmenu( "widget" );
+	button.simulate( "focus" );
+	setTimeout( function() {
+		try {
+			button.trigger( "click" );
+			assert.strictEqual( button.text(), "Faster", "Selected value is correct" );
+		} catch ( e ) {
+			assert.ok( false, "Clicking on the select box crashed" );
+		}
+
+		ready();
+	} );
+} );
+
+QUnit.test( "Optgroups with hidden attribute should not break the widget (gh-2082)",
+		function( assert ) {
+	var ready = assert.async();
+	assert.expect( 1 );
+
+	var button;
+	var element = $( "#files" );
+
+	element.find( "optgroup" ).first().prop( "hidden", true );
+	element
+		.find( "optgroup" ).eq( 1 )
+		.find( "option" ).first()
+		.prop( "hidden", true );
+	element.val( "someotherfile" );
+	element.selectmenu();
+
+	button = element.selectmenu( "widget" );
+	button.simulate( "focus" );
+	setTimeout( function() {
+		try {
+			button.trigger( "click" );
+			assert.strictEqual( button.text(), "Some other file", "Selected option is correct" );
+		} catch ( e ) {
+			assert.ok( false, "Clicking on the select box crashed" );
+		}
+
+		ready();
+	} );
+} );
+
+QUnit.test( "extra listeners created after selection (trac-15078, trac-15152)", function( assert ) {
+	assert.expect( 3 );
+
+	var origRemoveListenersCount;
+	var element = $( "#speed" ).selectmenu();
+	var menu = element.selectmenu( "widget" );
+
+	element.val( "Slow" );
+	element.selectmenu( "refresh" );
+	origRemoveListenersCount = jQuery._data( menu[ 0 ], "events" ).remove.length;
+
+	element.val( "Fast" );
+	element.selectmenu( "refresh" );
+	assert.equal( jQuery._data( menu[ 0 ], "events" ).remove.length,
+		origRemoveListenersCount,
+		"No extra listeners after typing multiple letters" );
+
+	element.val( "Faster" );
+	element.selectmenu( "refresh" );
+	assert.equal( jQuery._data( menu[ 0 ], "events" ).remove.length,
+		origRemoveListenersCount,
+		"No extra listeners after typing multiple letters" );
+
+	element.val( "Slow" );
+	element.selectmenu( "refresh" );
+	assert.equal( jQuery._data( menu[ 0 ], "events" ).remove.length,
+		origRemoveListenersCount,
+		"No extra listeners after typing multiple letters" );
 } );
 
 } );
