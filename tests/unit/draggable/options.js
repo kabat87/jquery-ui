@@ -280,7 +280,7 @@ QUnit.test( "connectToSortable, dragging out of a sortable", function( assert ) 
 
 	$( element ).one( "dragstop", function( event, ui ) {
 
-		// http://bugs.jqueryui.com/ticket/8809
+		// https://bugs.jqueryui.com/ticket/8809
 		// Position issue when connected to sortable
 		result = ui.helper.offset();
 
@@ -289,12 +289,12 @@ QUnit.test( "connectToSortable, dragging out of a sortable", function( assert ) 
 		assert.ok( Math.abs( result.top - offsetExpected.top ) < 0.25, "draggable offset is within 0.25 of expected" );
 		assert.ok( Math.abs( result.left - offsetExpected.left ) < 0.25, "draggable offset is within 0.25 of expected" );
 
-		// Http://bugs.jqueryui.com/ticket/7734
+		// https://bugs.jqueryui.com/ticket/7734
 		// HTML IDs are removed when dragging to a Sortable
 		assert.equal( sortItem[ 0 ], dragHelper[ 0 ], "both have the same helper" );
 		assert.equal( sortItem.attr( "id" ), dragHelper.attr( "id" ), "both have the same id" );
 
-		// Http://bugs.jqueryui.com/ticket/9481
+		// https://bugs.jqueryui.com/ticket/9481
 		// connectToSortable causes sortable revert to fail on second attempt
 		assert.equal( sortable.sortable( "option", "revert" ), 100, "sortable revert behavior is preserved" );
 	} );
@@ -324,7 +324,7 @@ QUnit.test( "connectToSortable, dragging clone into sortable", function( assert 
 	$( sortable ).one( "sort", function( event, ui ) {
 		offsetPlaceholder = ui.placeholder.offset();
 
-		// http://bugs.jqueryui.com/ticket/8809
+		// https://bugs.jqueryui.com/ticket/8809
 		// Position issue when connected to sortable
 		assert.deepEqual( ui.helper.offset(), offsetSortable, "sortable offset is correct" );
 		assert.notDeepEqual( ui.helper.offset(), offsetPlaceholder, "offset not equal to placeholder" );
@@ -332,7 +332,7 @@ QUnit.test( "connectToSortable, dragging clone into sortable", function( assert 
 
 	$( sortable ).one( "sortstop", function( event, ui ) {
 
-		// http://bugs.jqueryui.com/ticket/9675
+		// https://bugs.jqueryui.com/ticket/9675
 		// Animation issue with revert and connectToSortable
 		assert.deepEqual( ui.item.offset(), offsetPlaceholder, "offset eventually equals placeholder" );
 		ready();
@@ -374,7 +374,7 @@ QUnit.test( "connectToSortable, dragging multiple elements in and out of sortabl
 		moves: 10
 	} );
 
-	// Http://bugs.jqueryui.com/ticket/9675
+	// https://bugs.jqueryui.com/ticket/9675
 	// Animation issue with revert and connectToSortable
 	sortable.one( "sortstop", function( event, ui ) {
 		assert.ok( !$.contains( document, ui.placeholder[ 0 ] ), "placeholder was removed" );
@@ -436,7 +436,7 @@ QUnit.test( "connectToSortable, dragging through a sortable", function( assert )
 		sortable = $( "#sortable2" ).sortable(),
 		sortableOffset = sortable.offset();
 
-	// Http://bugs.jqueryui.com/ticket/10669
+	// https://bugs.jqueryui.com/ticket/10669
 	// Draggable: Position issue with connectToSortable
 	draggable.one( "dragstop", function() {
 		assert.equal( draggable.parent().attr( "id" ), "sortable", "restored draggable to original parent" );
@@ -571,7 +571,7 @@ QUnit.test( "containment, account for border", function( assert ) {
 		"The draggable should be to the right of its parent's right border" );
 } );
 
-// http://bugs.jqueryui.com/ticket/7016
+// https://bugs.jqueryui.com/ticket/7016
 // draggable can be pulled out of containment in Chrome and IE8
 QUnit.test( "containment, element cant be pulled out of container", function( assert ) {
 	assert.expect( 1 );
@@ -695,15 +695,10 @@ QUnit.test( "#6889: Cursor doesn't revert to pre-dragging state after revert act
 		} ),
 		expected = getCursor();
 
-	if ( testHelper.unreliableContains ) {
-		assert.ok( true, "Opera <12.14 and Safari <6.0 report wrong values for $.contains in jQuery < 1.8" );
-		assert.ok( true, "Opera <12.14 and Safari <6.0 report wrong values for $.contains in jQuery < 1.8" );
-	} else {
-		element.simulate( "drag", {
-			dx: -1,
-			dy: -1
-		} );
-	}
+	element.simulate( "drag", {
+		dx: -1,
+		dy: -1
+	} );
 } );
 
 QUnit.test( "cursor, default, switching after initialization", function( assert ) {
@@ -748,11 +743,11 @@ QUnit.test( "cursorAt", function( assert ) {
 							assert.equal( ui.position.left - ui.originalPosition.left, deltaX, testName + " " + position + " left" );
 							assert.equal( ui.position.top - ui.originalPosition.top, deltaY, testName + " " + position + " top" );
 						} else if ( testData.cursorAt.right ) {
-							assert.equal( ui.helper.width() - ( event.clientX - ui.offset.left ), testData.x - testHelper.unreliableOffset, testName + " " + position + " left" );
-							assert.equal( ui.helper.height() - ( event.clientY - ui.offset.top ), testData.y - testHelper.unreliableOffset, testName + " " + position + " top" );
+							assert.equal( ui.helper.width() - ( event.clientX - ui.offset.left ), testData.x, testName + " " + position + " left" );
+							assert.equal( ui.helper.height() - ( event.clientY - ui.offset.top ), testData.y, testName + " " + position + " top" );
 						} else {
-							assert.equal( event.clientX - ui.offset.left, testData.x + testHelper.unreliableOffset, testName + " " + position + " left" );
-							assert.equal( event.clientY - ui.offset.top, testData.y + testHelper.unreliableOffset, testName + " " + position + " top" );
+							assert.equal( event.clientX - ui.offset.left, testData.x, testName + " " + position + " left" );
+							assert.equal( event.clientY - ui.offset.top, testData.y, testName + " " + position + " top" );
 						}
 					}
 			} );
@@ -790,11 +785,11 @@ QUnit.test( "cursorAt, switching after initialization", function( assert ) {
 							assert.equal( ui.position.left - ui.originalPosition.left, deltaX, testName + " " + position + " left" );
 							assert.equal( ui.position.top - ui.originalPosition.top, deltaY, testName + " " + position + " top" );
 						} else if ( testData.cursorAt.right ) {
-							assert.equal( ui.helper.width() - ( event.clientX - ui.offset.left ), testData.x - testHelper.unreliableOffset, testName + " " + position + " left" );
-							assert.equal( ui.helper.height() - ( event.clientY - ui.offset.top ), testData.y - testHelper.unreliableOffset, testName + " " + position + " top" );
+							assert.equal( ui.helper.width() - ( event.clientX - ui.offset.left ), testData.x, testName + " " + position + " left" );
+							assert.equal( ui.helper.height() - ( event.clientY - ui.offset.top ), testData.y, testName + " " + position + " top" );
 						} else {
-							assert.equal( event.clientX - ui.offset.left, testData.x + testHelper.unreliableOffset, testName + " " + position + " left" );
-							assert.equal( event.clientY - ui.offset.top, testData.y + testHelper.unreliableOffset, testName + " " + position + " top" );
+							assert.equal( event.clientX - ui.offset.left, testData.x, testName + " " + position + " left" );
+							assert.equal( event.clientY - ui.offset.top, testData.y, testName + " " + position + " top" );
 						}
 					}
 			} );
@@ -898,7 +893,7 @@ QUnit.test( "helper, default, switching after initialization", function( assert 
 	testHelper.shouldMove( assert, element, "helper: original" );
 } );
 
-// http://bugs.jqueryui.com/ticket/9446
+// https://bugs.jqueryui.com/ticket/9446
 // Draggable: helper function cannot emulate default behavior
 QUnit.test( "helper, function returning original element", function( assert ) {
 	assert.expect( 1 );
@@ -1018,7 +1013,7 @@ QUnit.test( "opacity, default, switching after initialization", function( assert
 } );
 
 QUnit.test( "revert and revertDuration", function( assert ) {
-	var ready = assert.async();
+	var ready = assert.async( 2 );
 	assert.expect( 7 );
 
 	var element = $( "#draggable2" ).draggable( {
@@ -1035,7 +1030,7 @@ QUnit.test( "revert and revertDuration", function( assert ) {
 
 	$( "#draggable2" ).draggable( "option", {
 		revert: true,
-		revertDuration: 200,
+		revertDuration: 300,
 		stop: function() {
 			ready();
 		}
@@ -1045,6 +1040,7 @@ QUnit.test( "revert and revertDuration", function( assert ) {
 	testHelper.move( element, 50, 50 );
 	setTimeout( function() {
 		assert.ok( $( "#draggable2" ).is( ":animated" ), "revert: true with revertDuration should animate" );
+		ready();
 	} );
 } );
 
@@ -1140,15 +1136,6 @@ QUnit.test( "scroll ignores containers that are overflow: hidden", function( ass
 		dy: 1300
 	} );
 
-	// IE8 natively scrolls when dragging an element inside a overflow:hidden
-	// container, so skip this test if native scroll occurs.
-	// Support: IE <9
-	if ( scrollParent.scrollTop() > 0 ) {
-		assert.ok( true, "overflow:hidden container natively scrolls" );
-		assert.ok( true, "overflow:hidden container natively scrolls" );
-		return;
-	}
-
 	element.css( { top: 0, left: 0 } ).draggable( "option", "scroll", true );
 
 	element.simulate( "drag", {
@@ -1172,9 +1159,7 @@ QUnit.test( "#6817: auto scroll goes double distance when dragging", function( a
 			scroll: true,
 			stop: function( e, ui ) {
 				assert.equal( ui.offset.top, newY, "offset of item matches pointer position after scroll" );
-
-				// TODO: fix IE8 testswarm IFRAME positioning bug so assert.close can be turned back to equal
-				assert.close( ui.offset.top - offsetBefore.top, distance, 1, "offset of item only moves expected distance after scroll" );
+				assert.equal( ui.offset.top - offsetBefore.top, distance, 1, "offset of item only moves expected distance after scroll" );
 			}
 		} ),
 		scrollSensitivity = element.draggable( "option", "scrollSensitivity" ),
@@ -1211,7 +1196,7 @@ QUnit.test( "snap, snapMode, and snapTolerance", function( assert ) {
 		} ),
 		element2 = $( "#draggable2" ).draggable();
 
-	// Http://bugs.jqueryui.com/ticket/9724
+	// https://bugs.jqueryui.com/ticket/9724
 	// Draggable: Snapping coordinates thrown off by margin on draggable
 	element.css( "margin", "3px" );
 
@@ -1230,9 +1215,8 @@ QUnit.test( "snap, snapMode, and snapTolerance", function( assert ) {
 		moves: 1
 	} );
 
-	// TODO: fix IE8 testswarm IFRAME positioning bug so assert.close can be turned back to equal
-	assert.close( element.offset().left, newX, 1, "doesn't snap outside the snapTolerance" );
-	assert.close( element.offset().top, newY, 1, "doesn't snap outside the snapTolerance" );
+	assert.equal( element.offset().left, newX, 1, "doesn't snap outside the snapTolerance" );
+	assert.equal( element.offset().top, newY, 1, "doesn't snap outside the snapTolerance" );
 
 	newX += 3;
 
@@ -1356,16 +1340,8 @@ QUnit.test( "#8459: element can snap to an element that was removed during drag"
 		moves: 1
 	} );
 
-	// Support: Opera 12.10, Safari 5.1, jQuery <1.8
-	if ( testHelper.unreliableContains ) {
-		assert.ok( true, "Opera <12.14 and Safari <6.0 report wrong values for $.contains in jQuery < 1.8" );
-		assert.ok( true, "Opera <12.14 and Safari <6.0 report wrong values for $.contains in jQuery < 1.8" );
-	} else {
-
-		// TODO: fix IE8 testswarm IFRAME positioning bug so assert.close can be turned back to equal
-		assert.close( element.offset().left, newX, 1, "doesn't snap to a removed element" );
-		assert.close( element.offset().top, newY, 1, "doesn't snap to a removed element" );
-	}
+	assert.strictEqual( element.offset().left, newX, "doesn't snap to a removed element" );
+	assert.strictEqual( element.offset().top, newY, "doesn't snap to a removed element" );
 } );
 
 QUnit.test( "#8165: Snapping large rectangles to small rectangles doesn't snap properly", function( assert ) {
@@ -1470,7 +1446,7 @@ QUnit.test( "zIndex, default, switching after initialization", function( assert 
 } );
 
 QUnit.test( "iframeFix", function( assert ) {
-	assert.expect( 6 );
+	assert.expect( 5 );
 
 	var element = $( "<div>" ).appendTo( "#qunit-fixture" ).draggable( { iframeFix: true } ),
 		element2 = $( "<div>" ).appendTo( "#qunit-fixture" ).draggable( { iframeFix: ".iframe" } ),
@@ -1486,22 +1462,15 @@ QUnit.test( "iframeFix", function( assert ) {
 	} );
 
 	element.one( "drag", function() {
-		var divOffset, iframeOffset,
-			div = $( this ).children().not( "iframe" );
+		var div = $( this ).children().not( "iframe" );
 
-		// http://bugs.jqueryui.com/ticket/9671
+		// https://bugs.jqueryui.com/ticket/9671
 		// iframeFix doesn't handle iframes that move
 		assert.equal( div.length, 1, "blocking div added as sibling" );
 		assert.equal( div.outerWidth(), iframe.outerWidth(), "blocking div is wide enough" );
 		assert.equal( div.outerHeight(), iframe.outerHeight(), "blocking div is tall enough" );
 
-		divOffset = div.offset();
-		iframeOffset = iframe.offset();
-
-		// Support: Edge <79 only
-		// In Edge Legacy these values differ a little.
-		assert.ok( Math.abs( divOffset.top - iframeOffset.top ) < 0.25, "Check top within 0.25 of expected" );
-		assert.ok( Math.abs( divOffset.left - iframeOffset.left ) < 0.25, "Check left within 0.25 of expected" );
+		assert.deepEqual( div.offset(), iframe.offset(), "blocking div is tall enough" );
 	} );
 
 	element.simulate( "drag", {

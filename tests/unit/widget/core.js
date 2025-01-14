@@ -92,6 +92,18 @@ QUnit.test( "element normalization", function( assert ) {
 	$.ui.testWidget();
 } );
 
+QUnit.test( "contextless construction", function( assert ) {
+	assert.expect( 1 );
+	var testWidget,
+		elem = $( "<div>" );
+
+	$.widget( "ui.testWidget", {} );
+	testWidget = $.ui.testWidget;
+
+	testWidget( {}, elem );
+	assert.ok( true, "No crash" );
+} );
+
 QUnit.test( "custom selector expression", function( assert ) {
 	assert.expect( 1 );
 	var elem = $( "<div>" ).appendTo( "#qunit-fixture" );
@@ -230,6 +242,28 @@ QUnit.test( "error handling", function( assert ) {
 	$.error = error;
 } );
 
+QUnit.test( "Prototype pollution", function( assert ) {
+	assert.expect( 3 );
+
+	var elem = $( "<div>" );
+
+	$.widget( "ui.testWidget", {} );
+
+	elem.testWidget();
+
+	try {
+		$.widget( "ui.__proto__", {} );
+	} catch ( _e ) {}
+	try {
+		$.widget( "ui.constructor", {} );
+	} catch ( _e ) {}
+
+	assert.strictEqual( Object.getPrototypeOf( $.ui ), Object.prototype,
+		"$.ui constructor not modified" );
+	assert.ok( $.ui instanceof Object, "$.ui is an Object instance" );
+	assert.notOk( $.ui instanceof Function, "$.ui is not a Function instance" );
+} );
+
 QUnit.test( "merge multiple option arguments", function( assert ) {
 	assert.expect( 1 );
 	$.widget( "ui.testWidget", {
@@ -281,9 +315,7 @@ QUnit.test( "._getCreateOptions()", function( assert ) {
 
 			assert.deepEqual( superOptions, {}, "Base implementation returns empty object" );
 
-			// Support: IE8
-			// Strict equality fails when comparing this.window in ie8
-			assert.equal( this.window[ 0 ], window, "this.window is properly defined" );
+			assert.strictEqual( this.window[ 0 ], window, "this.window is properly defined" );
 			assert.strictEqual( this.document[ 0 ], document, "this.document is properly defined" );
 
 			return {

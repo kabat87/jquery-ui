@@ -129,7 +129,7 @@ QUnit.test( "aspectRatio: 'preserve' (ne)", function( assert ) {
 QUnit.test( "aspectRatio: Resizing can move objects", function( assert ) {
 	assert.expect( 7 );
 
-	// Http://bugs.jqueryui.com/ticket/7018 - Resizing can move objects
+	// https://bugs.jqueryui.com/ticket/7018 - Resizing can move objects
 	var handleW = ".ui-resizable-w",
 		handleNW = ".ui-resizable-nw",
 		target = $( "#resizable1" ).resizable( {
@@ -146,7 +146,7 @@ QUnit.test( "aspectRatio: Resizing can move objects", function( assert ) {
 	assert.equal( target.height(), 100, "compare height - no size change" );
 	assert.equal( target.position().left, 75, "compare left - no movement" );
 
-	// Http://bugs.jqueryui.com/ticket/9107 - aspectRatio and containment not handled correctly
+	// https://bugs.jqueryui.com/ticket/9107 - aspectRatio and containment not handled correctly
 	$( "#container" ).css( { width: 200, height: 300, position: "absolute", left: 100, top: 100 } );
 	$( "#resizable1" ).css( { width: 100, height: 100, left: 0, top: 0 } );
 
@@ -198,7 +198,7 @@ QUnit.test( "containment", function( assert ) {
 QUnit.test( "containment - not immediate parent", function( assert ) {
 	assert.expect( 4 );
 
-	// Http://bugs.jqueryui.com/ticket/7485 - Resizable: Containment calculation is wrong
+	// https://bugs.jqueryui.com/ticket/7485 - Resizable: Containment calculation is wrong
 	// when containment element is not the immediate parent
 	var element = $( "#child" ).resizable( {
 		containment: "#container2",
@@ -230,7 +230,7 @@ QUnit.test( "containment - not immediate parent", function( assert ) {
 QUnit.test( "containment - immediate parent", function( assert ) {
 	assert.expect( 4 );
 
-	// Http://bugs.jqueryui.com/ticket/10140 - Resizable: Width calculation is wrong when containment element is "position: relative"
+	// https://bugs.jqueryui.com/ticket/10140 - Resizable: Width calculation is wrong when containment element is "position: relative"
 	// when containment element is  immediate parent
 	var element = $( "#child" ).resizable( {
 		containment: "parent",
@@ -327,7 +327,7 @@ QUnit.test( "grid - Resizable: can be moved when grid option is set (#9611)", fu
 QUnit.test( "grid - maintains grid with padding and border when approaching no dimensions", function( assert ) {
 	assert.expect( 2 );
 
-	// Http://bugs.jqueryui.com/ticket/10437 - Resizable: border with grid option working wrong
+	// https://bugs.jqueryui.com/ticket/10437 - Resizable: border with grid option working wrong
 	var handle = ".ui-resizable-nw",
 		target = $( "#resizable1" ).css( {
 			padding: 5,
@@ -524,12 +524,93 @@ QUnit.test( "alsoResize + multiple selection", function( assert ) {
 		} );
 
 	testHelper.drag( ".ui-resizable-se", 400, 400 );
-	assert.equal( element.width(), 300, "resizable constrained width at containment edge" );
-	assert.equal( element.height(), 200, "resizable constrained height at containment edge" );
-	assert.equal( other1.width(), 250, "alsoResize o1 constrained width at containment edge" );
-	assert.equal( other1.height(), 150, "alsoResize o1 constrained height at containment edge" );
-	assert.equal( other2.width(), 250, "alsoResize o2 constrained width at containment edge" );
-	assert.equal( other2.height(), 150, "alsoResize o2 constrained height at containment edge" );
+
+	assert.strictEqual( element.width(), 300,
+		"resizable constrained width at containment edge" );
+	assert.strictEqual( element.height(), 200,
+		"resizable constrained height at containment edge" );
+	assert.strictEqual( other1.width(), 250,
+		"alsoResize o1 constrained width at containment edge" );
+	assert.strictEqual( other1.height(), 150,
+		"alsoResize o1 constrained height at containment edge" );
+	assert.strictEqual( other2.width(), 250,
+		"alsoResize o2 constrained width at containment edge" );
+	assert.strictEqual( other2.height(), 150,
+		"alsoResize o2 constrained height at containment edge" );
 } );
+
+QUnit.test( "alsoResize with box-sizing: border-box", function( assert ) {
+	assert.expect( 4 );
+
+	$( "<style> * { box-sizing: border-box; } </style>" ).appendTo( "#qunit-fixture" );
+
+	var other = $( "<div>" )
+			.css( {
+				width: "50px",
+				height: "50px",
+				padding: "10px",
+				border: "5px",
+				borderStyle: "solid"
+			} )
+			.appendTo( "#qunit-fixture" ),
+		element = $( "#resizable1" ).resizable( {
+			alsoResize: other
+		} ),
+		handle = ".ui-resizable-se";
+
+	testHelper.drag( handle, 80, 80 );
+
+	assert.equal( element.width(), 180, "resizable width" );
+	assert.equal( parseFloat( other.css( "width" ) ), 130, "alsoResize width" );
+	assert.equal( element.height(), 180, "resizable height" );
+	assert.equal( parseFloat( other.css( "height" ) ), 130, "alsoResize height" );
+} );
+
+QUnit.test( "alsoResize with scrollbars and box-sizing: border-box", function( assert ) {
+	assert.expect( 4 );
+	testAlsoResizeWithBoxSizing( assert, {
+		isBorderBox: true
+	} );
+} );
+
+QUnit.test( "alsoResize with scrollbars and box-sizing: content-box", function( assert ) {
+	assert.expect( 4 );
+	testAlsoResizeWithBoxSizing( assert, {
+		isBorderBox: false
+	} );
+} );
+
+function testAlsoResizeWithBoxSizing( assert, options ) {
+	var widthBefore, heightBefore,
+		cssBoxSizing = options.isBorderBox ? "border-box" : "content-box",
+		other = $( "<div>" )
+			.css( {
+				width: "150px",
+				height: "150px",
+				padding: "10px",
+				border: "5px",
+				borderStyle: "solid",
+				margin: "20px",
+				overflow: "scroll"
+			} )
+			.appendTo( "#qunit-fixture" ),
+		element = $( "#resizable1" ).resizable( {
+			alsoResize: other
+		} ),
+		handle = ".ui-resizable-se";
+
+	$( "<style> * { box-sizing: " + cssBoxSizing + "; } </style>" ).appendTo( "#qunit-fixture" );
+
+	// In some browsers scrollbar may change element computed size.
+	widthBefore = other.innerWidth();
+	heightBefore = other.innerHeight();
+
+	testHelper.drag( handle, 80, 80 );
+
+	assert.equal( element.width(), 180, "resizable width" );
+	assert.equal( parseFloat( other.innerWidth() ), widthBefore + 80, "alsoResize width" );
+	assert.equal( element.height(), 180, "resizable height" );
+	assert.equal( parseFloat( other.innerHeight() ), heightBefore + 80, "alsoResize height" );
+}
 
 } );

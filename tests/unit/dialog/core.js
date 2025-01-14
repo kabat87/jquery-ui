@@ -84,6 +84,77 @@ QUnit.test( "ARIA", function( assert ) {
 	element.remove();
 } );
 
+QUnit.test( "aria-modal", function( assert ) {
+	assert.expect( 9 );
+
+	var element, wrapper;
+
+	element = $( "<div>" ).dialog( { modal: true } );
+	wrapper = element.dialog( "widget" );
+	assert.equal( wrapper.attr( "aria-modal" ), "true", "modal option set to true, aria-modal attribute added" );
+	element.dialog( "option", "modal", false );
+	assert.equal( wrapper.attr( "aria-modal" ), undefined, "modal option set to false, aria-modal attribute not added" );
+	element.dialog( "option", "modal", true );
+	assert.equal( wrapper.attr( "aria-modal" ), "true", "modal option set to true, aria-modal attribute added" );
+	element.remove();
+
+	element = $( "<div>" ).dialog( { modal: false } );
+	wrapper = element.dialog( "widget" );
+	assert.equal( wrapper.attr( "aria-modal" ), undefined, "modal option set to false, aria-modal attribute not added" );
+	element.dialog( "option", "modal", true );
+	assert.equal( wrapper.attr( "aria-modal" ), "true", "modal option set to true, aria-modal attribute added" );
+	element.dialog( "option", "modal", false );
+	assert.equal( wrapper.attr( "aria-modal" ), undefined, "modal option set to false, aria-modal attribute not added" );
+	element.remove();
+
+	element = $( "<div>" ).dialog();
+	wrapper = element.dialog( "widget" );
+	assert.equal( wrapper.attr( "aria-modal" ), undefined, "modal option not set, aria-modal attribute not added" );
+	element.dialog( "option", "modal", true );
+	assert.equal( wrapper.attr( "aria-modal" ), "true", "modal option set to true, aria-modal attribute added" );
+	element.dialog( "option", "modal", false );
+	assert.equal( wrapper.attr( "aria-modal" ), undefined, "modal option set to false, aria-modal attribute not added" );
+	element.remove();
+} );
+
+QUnit.test( "ui dialog title heading level", function( assert ) {
+	assert.expect( 8 );
+
+	var element, nodeName;
+
+	element = $( "<div>" ).dialog( { modal: true } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "span", "Element wrapping the dialog title is span" );
+
+	element = $( "<div>" ).dialog( { modal: true, uiDialogTitleHeadingLevel: 0 } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "span", "Element wrapping the dialog title is span" );
+
+	element = $( "<div>" ).dialog( { modal: true, uiDialogTitleHeadingLevel: 1 } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "h1", "Element wrapping the dialog title is h1" );
+
+	element = $( "<div>" ).dialog( { modal: true, uiDialogTitleHeadingLevel: 6 } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "h6", "Element wrapping the dialog title is h6" );
+
+	element = $( "<div>" ).dialog( { modal: true, uiDialogTitleHeadingLevel: 9 } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "span", "Element wrapping the dialog title is span" );
+
+	element = $( "<div>" ).dialog( { modal: true, uiDialogTitleHeadingLevel: -9 } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "span", "Element wrapping the dialog title is span" );
+
+	element = $( "<div>" ).dialog( { modal: true, uiDialogTitleHeadingLevel: 2.3 } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "span", "Element wrapping the dialog title is span" );
+
+	element = $( "<div>" ).dialog( { modal: true, uiDialogTitleHeadingLevel: "foo" } );
+	nodeName = element.dialog( "widget" ).find( ".ui-dialog-title" ).get( 0 ).nodeName.toLowerCase();
+	assert.equal( nodeName, "span", "Element wrapping the dialog title is span" );
+} );
+
 QUnit.test( "widget method", function( assert ) {
 	assert.expect( 1 );
 	var dialog = $( "<div>" ).appendTo( "#qunit-fixture" ).dialog();
@@ -103,12 +174,6 @@ QUnit.test( "focus tabbable", function( assert ) {
 		};
 
 	function checkFocus( markup, options, testFn, next ) {
-
-		// Support: IE8
-		// For some reason the focus doesn't get set properly if we don't
-		// focus the body first.
-		$( "body" ).trigger( "focus" );
-
 		element = $( markup ).dialog( options );
 		setTimeout( function() {
 			testFn( function done() {
@@ -122,31 +187,12 @@ QUnit.test( "focus tabbable", function( assert ) {
 		checkFocus( "<div><input><input></div>", options, function( done ) {
 			var input = element.find( "input" ).last().trigger( "focus" ).trigger( "blur" );
 
-			// Support: IE 11+
-			// In IE in jQuery 3.4+ a sequence:
-			// $( inputNode ).trigger( "focus" ).trigger( "blur" ).trigger( "focus" )
-			// doesn't end up with a focused input. See:
-			// https://github.com/jquery/jquery/issues/4856
-			// However, in this test we only want to check that the last focused
-			// input receives the focus back when `_focusTabbable()` is called
-			// which in reality doesn't happen so quickly so let's avoid the issue
-			// by waiting a bit.
-			if ( document.documentMode ) {
-				setTimeout( function() {
-					focusTabbableAndAssert();
-				}, 500 );
-			} else {
-				focusTabbableAndAssert();
-			}
-
-			function focusTabbableAndAssert() {
-				element.dialog( "instance" )._focusTabbable();
-				setTimeout( function() {
-					assert.equal( document.activeElement, input[ 0 ],
-						"1. an element that was focused previously." );
-					done();
-				} );
-			}
+			element.dialog( "instance" )._focusTabbable();
+			setTimeout( function() {
+				assert.equal( document.activeElement, input[ 0 ],
+					"1. an element that was focused previously." );
+				done();
+			} );
 		}, step2 );
 	}
 
@@ -302,11 +348,6 @@ QUnit.test( "interaction between overlay and other dialogs", function( assert ) 
 		firstInput = first.find( "input" ),
 		second = $( "<div><input id='input-2'></div>" ).testWidget(),
 		secondInput = second.find( "input" );
-
-	// Support: IE8
-	// For some reason the focus doesn't get set properly if we don't
-	// focus the body first.
-	$( "body" ).trigger( "focus" );
 
 	// Wait for the modal to init
 	setTimeout( function() {

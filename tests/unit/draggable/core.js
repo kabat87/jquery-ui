@@ -38,8 +38,8 @@ QUnit.test( "element types", function( assert ) {
 		} );
 		offsetAfter = el.offset();
 
-		// Support: FF, Chrome, and IE9,
-		// there are some rounding errors in so we can't say equal, we have to settle for close enough
+		// Support: Firefox, Chrome
+		// There are some rounding errors, so we can't say equal, we have to settle for close enough
 		assert.close( offsetBefore.left, offsetAfter.left - 50, 1, "dragged[50, 50] " + "<" + typeName + "> left" );
 		assert.close( offsetBefore.top, offsetAfter.top - 50, 1, "dragged[50, 50] " + "<" + typeName + "> top" );
 		el.draggable( "destroy" );
@@ -96,20 +96,14 @@ QUnit.test( "#8269: Removing draggable element on drop", function( assert ) {
 		}
 	} );
 
-	// Support: Opera 12.10, Safari 5.1, jQuery <1.8
-	if ( testHelper.unreliableContains ) {
-		assert.ok( true, "Opera <12.14 and Safari <6.0 report wrong values for $.contains in jQuery < 1.8" );
-		assert.ok( true, "Opera <12.14 and Safari <6.0 report wrong values for $.contains in jQuery < 1.8" );
-	} else {
-		element.simulate( "drag", {
-			handle: "corner",
-			x: dropOffset.left,
-			y: dropOffset.top
-		} );
-	}
+	element.simulate( "drag", {
+		handle: "corner",
+		x: dropOffset.left,
+		y: dropOffset.top
+	} );
 } );
 
-// http://bugs.jqueryui.com/ticket/7778
+// https://bugs.jqueryui.com/ticket/7778
 // drag element breaks in IE8 when its content is replaced onmousedown
 QUnit.test( "Stray mousemove after mousedown still drags", function( assert ) {
 	assert.expect( 2 );
@@ -118,7 +112,6 @@ QUnit.test( "Stray mousemove after mousedown still drags", function( assert ) {
 
 	// In IE8, when content is placed under the mouse (e.g. when draggable content is replaced
 	// on mousedown), mousemove is triggered on those elements even though the mouse hasn't moved.
-	// Support: IE <9
 	element.on( "mousedown", function() {
 		$( document ).simulate( "mousemove", { button: -1 } );
 	} );
@@ -186,11 +179,11 @@ QUnit.test( "scroll offset with fixed ancestors", function( assert ) {
 	var startValue = 300,
 		element = $( "#draggable1" )
 
-			// http://bugs.jqueryui.com/ticket/5009
+			// https://bugs.jqueryui.com/ticket/5009
 			// scroll not working with parent's position fixed
 			.wrap( "<div id='wrapper' />" )
 
-			// http://bugs.jqueryui.com/ticket/9612
+			// https://bugs.jqueryui.com/ticket/9612
 			// abspos elements inside of fixed elements moving away from the mouse when scrolling
 			.wrap( "<div id='wrapper2' />" )
 			.draggable( {
@@ -220,8 +213,8 @@ QUnit.test( "scroll offset with fixed ancestors", function( assert ) {
 $( [ "hidden", "auto", "scroll" ] ).each( function() {
 	var overflow = this;
 
-	// Http://bugs.jqueryui.com/ticket/9379 - position bug in scrollable div
-	// http://bugs.jqueryui.com/ticket/10147 - Wrong position in a parent with "overflow: hidden"
+	// https://bugs.jqueryui.com/ticket/9379 - position bug in scrollable div
+	// https://bugs.jqueryui.com/ticket/10147 - Wrong position in a parent with "overflow: hidden"
 	QUnit.test( "position in scrollable parent with overflow: " + overflow, function( assert ) {
 		assert.expect( 2 );
 
@@ -306,13 +299,13 @@ QUnit.test( "blur behavior - handle is main element", function( assert ) {
 
 		testHelper.move( focusElement, 1, 1 );
 
-		// Http://bugs.jqueryui.com/ticket/10527
+		// https://bugs.jqueryui.com/ticket/10527
 		// Draggable: Can't select option in modal dialog (IE8)
 		assert.strictEqual( document.activeElement, focusElement.get( 0 ), "test element is focused after mousing down on itself" );
 
 		testHelper.move( element, 50, 50 );
 
-		// Http://bugs.jqueryui.com/ticket/4261
+		// https://bugs.jqueryui.com/ticket/4261
 		// active element should blur when mousing down on a draggable
 		assert.notStrictEqual( document.activeElement, focusElement.get( 0 ), "test element is no longer focused after mousing down on a draggable" );
 		ready();
@@ -347,11 +340,13 @@ QUnit.test( "blur behavior - off handle", function( assert ) {
 	var element = $( "#draggable2" ).draggable( { handle: "span" } ),
 		focusElement = $( "<div tabindex='1'></div>" ).appendTo( element );
 
-	// Mock $.ui.safeBlur with a spy
-	var _safeBlur = $.ui.safeBlur;
+	// Mock $.ui.trigger with a spy
+	var _trigger = $.fn.trigger;
 	var blurCalledCount = 0;
-	$.ui.safeBlur = function() {
-		blurCalledCount++;
+	$.fn.trigger = function( eventName ) {
+		if ( eventName === "blur" ) {
+			blurCalledCount++;
+		}
 	};
 
 	testHelper.onFocus( focusElement, function() {
@@ -363,8 +358,8 @@ QUnit.test( "blur behavior - off handle", function( assert ) {
 		testHelper.move( element.find( "span" ), 1, 1 );
 		assert.strictEqual( blurCalledCount, 1, "draggable blurs when mousing down on handle" );
 
-		// Restore safeBlur
-		$.ui.safeBlur = _safeBlur;
+		// Restore trigger
+		$.fn.trigger = _trigger;
 
 		ready();
 	} );
@@ -400,27 +395,21 @@ QUnit.test( "ui-draggable-handle managed correctly in nested draggables", functi
 	assert.hasClasses( child, "ui-draggable-handle", "child retains class name on destroy" );
 } );
 
-// Support: IE 8 only
-// IE 8 implements DOM Level 2 Events which only has events bubble up to the document.
-// We skip this test since it would be impossible for it to pass in such an environment.
-QUnit[ document.documentMode === 8 ? "skip" : "test" ](
-	"does not stop propagation to window",
-	function( assert ) {
-		assert.expect( 1 );
-		var element = $( "#draggable1" ).draggable();
+QUnit.test( "does not stop propagation to window", function( assert ) {
+	assert.expect( 1 );
+	var element = $( "#draggable1" ).draggable();
 
-		var handler = function() {
-			assert.ok( true, "mouseup propagates to window" );
-		};
-		$( window ).on( "mouseup", handler );
+	var handler = function() {
+		assert.ok( true, "mouseup propagates to window" );
+	};
+	$( window ).on( "mouseup", handler );
 
-		element.simulate( "drag", {
-			dx: 10,
-			dy: 10
-		} );
+	element.simulate( "drag", {
+		dx: 10,
+		dy: 10
+	} );
 
-		$( window ).off( "mouseup", handler );
-	}
-);
+	$( window ).off( "mouseup", handler );
+} );
 
 } );
